@@ -196,6 +196,7 @@ fun RoletaApp() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 180.dp)
+
             ) {
                 items(nomes) { nome ->
                     Row(
@@ -209,7 +210,12 @@ fun RoletaApp() {
                             fontSize = 16.sp,
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(onClick = { nomes.remove(nome) }) {
+                        IconButton(onClick = {
+                            nomes.remove(nome)
+                            if (nomes.isEmpty()) {
+                                nomeSorteado = null
+                            }
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Remover",
@@ -251,10 +257,10 @@ fun RoletaApp() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(270.dp), // um pouco mais alto para espaço do ponteiro
+                    .height(270.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                // Roleta (por baixo)
+                // Roleta
                 RoletaCanvasComNomes(
                     nomes = nomes,
                     rotationAngle = rotation.value,
