@@ -43,7 +43,48 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            RoletaApp()
+            AppController()
+        }
+    }
+}
+@Composable
+fun AppController() {
+    var showRoleta by remember { mutableStateOf(false) }
+
+    if (showRoleta) {
+        RoletaApp(onBack = { showRoleta = false })
+    } else {
+        MenuPrincipal(onIniciarRoleta = { showRoleta = true })
+    }
+}
+@Composable
+fun MenuPrincipal(onIniciarRoleta: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Bem-vindo à Roleta de Nomes!",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF3F51B5),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onIniciarRoleta,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Iniciar Roleta", fontSize = 20.sp)
+            }
         }
     }
 }
@@ -132,7 +173,7 @@ fun RoletaCanvasComNomes(
 }
 
 @Composable
-fun RoletaApp() {
+fun RoletaApp(onBack: () -> Unit) {
     var nomeInput by remember { mutableStateOf("") }
     val nomes = remember { mutableStateListOf<String>() }
     var nomeSorteado by remember { mutableStateOf<String?>(null) }
@@ -148,15 +189,31 @@ fun RoletaApp() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = "Roleta de Nomes",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF3F51B5),
-                modifier = Modifier.padding(vertical = 16.dp)
+           /* Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             )
+            {*/
+                Button(
+                    onClick = onBack,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.wrapContentWidth()
+                ) {
+                    Text("Voltar")
+                }
 
-            OutlinedTextField(
+               /* Spacer(modifier = Modifier.weight(1f))*/
+
+                Text(
+                    text = "Roleta de Nomes",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF3F51B5),
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+                /*Spacer(modifier = Modifier.height(16.dp))*/
+
+                OutlinedTextField(
                 value = nomeInput,
                 onValueChange = { nomeInput = it },
                 label = { Text("Digite um nome") },
@@ -167,145 +224,150 @@ fun RoletaApp() {
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-
-            Button(
-                onClick = {
-                    if (nomeInput.isNotBlank()) {
-                        nomes.add(nomeInput.trim())
-                        nomeInput = ""
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("Adicionar")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Nomes adicionados:",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 180.dp)
-
-            ) {
-                items(nomes) { nome ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = nome,
-                            fontSize = 16.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = {
-                            nomes.remove(nome)
-                            if (nomes.isEmpty()) {
-                                nomeSorteado = null
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Remover",
-                                tint = Color.Black
-                            )
+                Button(
+                    onClick = {
+                        if (nomeInput.isNotBlank()) {
+                            nomes.add(nomeInput.trim())
+                            nomeInput = ""
                         }
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Adicionar")
                 }
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    if (nomes.isNotEmpty()) {
-                        val selectedIndex = nomes.indices.random()
-                        val fullRotations = 5 * 360f
-                        val anglePerSector = 360f / nomes.size
-                        val targetAngle = fullRotations - (selectedIndex * anglePerSector) - (anglePerSector / 2)
-                        coroutineScope.launch {
-                            rotation.animateTo(
-                                targetAngle,
-                                animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing)
-                            )
-                            nomeSorteado = nomes[selectedIndex]
-                        }
-                    }
-                },
-                enabled = nomes.isNotEmpty(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Sortear", fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Nomes adicionados:",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start
+                )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(270.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                // Roleta
-                RoletaCanvasComNomes(
-                    nomes = nomes,
-                    rotationAngle = rotation.value,
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
-                )
-                if (nomes.isNotEmpty()) {
-                    // Ponteiro (fixo no topo)
-                    Canvas(
-                        modifier = Modifier
-                            .size(30.dp)
-                            .offset(y = 6.dp) // ajusta para ficar mais próximo da roleta
-                    ) {
-                        val path = Path().apply {
-                            moveTo(size.width / 2f, size.height)
-                            lineTo(0f, 0f)
-                            lineTo(size.width, 0f)
-                            close()
-                        }
+                        .heightIn(max = 180.dp)
 
-                        drawPath(path, color = Color.Red)
+                ) {
+                    items(nomes) { nome ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = nome,
+                                fontSize = 16.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = {
+                                nomes.remove(nome)
+                                if (nomes.isEmpty()) {
+                                    nomeSorteado = null
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remover",
+                                    tint = Color.Black
+                                )
+                            }
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            nomeSorteado?.let {
-                Text(
-                    text = "Nome sorteado:",
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = it,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF009688),
-                    textAlign = TextAlign.Center
-                )
+                Button(
+                    onClick = {
+                        if (nomes.isNotEmpty()) {
+                            val selectedIndex = nomes.indices.random()
+                            val fullRotations = 5 * 360f
+                            val anglePerSector = 360f / nomes.size
+                            val targetAngle =
+                                fullRotations - (selectedIndex * anglePerSector) - (anglePerSector / 2)
+                            coroutineScope.launch {
+                                rotation.animateTo(
+                                    targetAngle,
+                                    animationSpec = tween(
+                                        durationMillis = 3000,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                )
+                                nomeSorteado = nomes[selectedIndex]
+                            }
+                        }
+                    },
+                    enabled = nomes.isNotEmpty(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Sortear", fontSize = 18.sp)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(270.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    // Roleta
+                    RoletaCanvasComNomes(
+                        nomes = nomes,
+                        rotationAngle = rotation.value,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                    )
+                    if (nomes.isNotEmpty()) {
+                        // Ponteiro (fixo no topo)
+                        Canvas(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .offset(y = 6.dp) // ajusta para ficar mais próximo da roleta
+                        ) {
+                            val path = Path().apply {
+                                moveTo(size.width / 2f, size.height)
+                                lineTo(0f, 0f)
+                                lineTo(size.width, 0f)
+                                close()
+                            }
+
+                            drawPath(path, color = Color.Red)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                nomeSorteado?.let {
+                    Text(
+                        text = "Nome sorteado:",
+                        fontSize = 18.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = it,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF009688),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
-}
+
 
